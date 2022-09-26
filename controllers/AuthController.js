@@ -79,3 +79,26 @@ module.exports.currentUser = async(req, res, next) => {
         res.status(500).json({ message: err.message })
     }
 }
+
+module.exports.forgetPassword = async(req, res, next) => {
+    try {
+        const { email, newPassword, secret } = req.body
+
+        if (!newPassword || !newPassword.length < 6) {
+            return res.status(400).json({ message: "New password is required and should be min 5 characters" })
+        }
+        if (!secret) {
+            return res.status(400).json({ message: "secret is required" })
+        }
+        const user = await UserModel.findOne({ email: email, secret: secret })
+        if (!user) {
+            return res.status(200).json({ message: "we cannot find any details" })
+        }
+
+        const hashed = await hashPassword(newPassword)
+        await UserModel.findByIdAndUpdate({ password: hashed })
+        res.status(200).json({ message: "Congrates, Now you can login with your new password" })
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+}
