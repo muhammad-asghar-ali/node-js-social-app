@@ -22,6 +22,11 @@ const UserSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    username: {
+        type: String,
+        unique: true,
+        required: true
+    },
     about: {},
     photo: String,
     followings: [{ type: mongoose.Schema.ObjectId, ref: "User" }],

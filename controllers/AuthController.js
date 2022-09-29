@@ -1,6 +1,7 @@
 const UserModel = require("../models/user")
 const { hashPassword, comparePassword } = require('../helpers/Auth')
 const jwt = require('jsonwebtoken')
+const { nanoid } = require('nanoid')
 
 module.exports.register = async(req, res) => {
     try {
@@ -28,7 +29,8 @@ module.exports.register = async(req, res) => {
             name,
             password: cryptedPassword,
             email,
-            secret
+            secret,
+            username: nanoid(10)
         }
         const user = await UserModel.create(userModel)
         if (!user) {
@@ -100,5 +102,79 @@ module.exports.forgetPassword = async(req, res, next) => {
         res.status(200).json({ message: "Congrates, Now you can login with your new password" })
     } catch (err) {
         res.status(500).json({ message: err.message })
+    }
+}
+
+module.exports.updateProfile = async(req, res, next) => {
+    try {
+        const data = req.body
+
+        const user = await UserModel.findByIdAndUpdate(req.user._id, data, { new: true })
+        if (!user) {
+            return res.status(200).json({})
+        }
+        user.password = undefined
+        user.secret = undefined
+        res.status(200).json(user)
+    } catch (err) {
+        if (err.code === 11000) {
+            return res.status(400).json({ message: "Duplicate username" })
+        }
+        res.status(500).json(err.message)
+    }
+}
+
+module.exports.findPeople = async(req, res, next) => {
+    try {
+        const id = req.user._id
+        const user = await UserModel.find(id)
+        const following = user.following
+        following.push(user._id)
+        const people = await UserModel.find({ _id: { nin: following } }).select("-password -secret").limit(10)
+        res.status(200).json(people)
+    } catch (err) {
+        res.status(500).json(err.message)
+    }
+}
+
+// middleware
+module.exports.addFollower = async(req, res, next) => {
+    try {
+        const { _id } = req.body
+        if (!_id) {
+            return res.status(400).json({ message: "id is missing" })
+        }
+        const user = await UserModel.findByIdAndUpdate(_id, {
+            $addToSet: { followers: req.user._id }
+        })
+        next()
+    } catch (err) {
+        res.status(500).json(err.message)
+    }
+}
+
+module.exports.userFollow = async(req, res, next) => {
+    try {
+        const { _id } = req.body
+        if (!_id) {
+            return res.status(400).json({ message: "id is missing" })
+        }
+        const user = await UserModel.findByIdAndUpdate(req.user._id, {
+            $addToSet: { following: _id }
+        }, { new: true }).select("-password -secret")
+        res.status(200).json(user)
+    } catch (err) {
+        res.status(500).json(err.message)
+    }
+}
+
+module.exports.userFollowings = async(req, res, next) => {
+    try {
+        const id = req.user._id
+        const user = await UserModel.findById(id)
+        const following = await UserModel.find({ _id: user.following }).limit(100)
+        res.status(200).json(following)
+    } catch (err) {
+        res.status(500).json(err.message)
     }
 }

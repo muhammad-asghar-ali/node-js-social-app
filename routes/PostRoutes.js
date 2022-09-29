@@ -12,5 +12,6 @@ router.get('/user-post/:id', requireSignIn, postController.getUserPost)
 router.put('/update-post/:id', requireSignIn, canEditAndDeletePost, postController.updateUserPost)
 router.delete('/delete-post/:id', requireSignIn, canEditAndDeletePost, postController.deleteUserPost)
 
+router.get('/news-feed', requireSignIn, postController.newsFeed)
 
 module.exports = router

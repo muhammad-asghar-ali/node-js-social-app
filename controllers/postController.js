@@ -1,4 +1,5 @@
 const PostModel = require("../models/post")
+const UserModel = require("../models/user")
 const cloudinary = require("cloudinary")
 
 cloudinary.config({
@@ -94,6 +95,22 @@ module.exports.deleteUserPost = async(req, res) => {
             const image = await cloudinary.uploader.destory(post.image.publicId)
         }
         res.status(200).json({ ok: true })
+
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+}
+
+module.exports.newsFeed = async(req, res) => {
+    try {
+        const id = req.user._id
+        const user = await UserModel.findById(id)
+        let following = user.following
+        following.push(req.user._id)
+
+        const posts = await PostModel.find({ postedBy: { $in: { following } } })
+            .populate("postedBy", "_id name image")
+            .sort({ createdAt: -1 }).limit(100)
 
     } catch (err) {
         res.status(500).json({ message: err.message })
