@@ -16,7 +16,7 @@ router.put('/user-unfollow', requireSignIn, authController.removeFollower, authC
 router.get('/user-following', requireSignIn, authController.userFollowings)
 
 router.get('/search-user/:query', authController.searchUser)
-
+router.get('/user/:username', authController.getUser)
 
 
 module.exports = router
