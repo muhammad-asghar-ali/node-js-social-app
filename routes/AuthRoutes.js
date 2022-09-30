@@ -12,6 +12,7 @@ router.put('/update-profile', requireSignIn, authController.updateProfile)
 router.get('/find-people', requireSignIn, authController.findPeople)
 
 router.put('/user-follow', requireSignIn, authController.addFollower, authController.userFollow)
+router.put('/user-unfollow', requireSignIn, authController.removeFollower, authController.userUnFollow)
 router.get('/user-following', requireSignIn, authController.userFollowings)
 
 

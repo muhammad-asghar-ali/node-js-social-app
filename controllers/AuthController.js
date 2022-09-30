@@ -178,3 +178,34 @@ module.exports.userFollowings = async(req, res, next) => {
         res.status(500).json(err.message)
     }
 }
+
+// remove followers
+module.exports.removeFollower = async(req, res, next) => {
+    try {
+        const { _id } = req.body
+        if (!_id) {
+            return res.status(400).json({ message: "id is missing" })
+        }
+        const user = await UserModel.findByIdAndUpdate(_id, {
+            $pull: { followers: req.user._id }
+        })
+        next()
+    } catch (err) {
+        res.status(500).json(err.message)
+    }
+}
+
+module.exports.userUnFollow = async(req, res, next) => {
+    try {
+        const { _id } = req.body
+        if (!_id) {
+            return res.status(400).json({ message: "id is missing" })
+        }
+        const user = await UserModel.findByIdAndUpdate(req.user._id, {
+            $pull: { following: _id }
+        }, { new: true }).select("-password -secret")
+        res.status(200).json(user)
+    } catch (err) {
+        res.status(500).json(err.message)
+    }
+}

@@ -13,5 +13,11 @@ router.put('/update-post/:id', requireSignIn, canEditAndDeletePost, postControll
 router.delete('/delete-post/:id', requireSignIn, canEditAndDeletePost, postController.deleteUserPost)
 
 router.get('/news-feed', requireSignIn, postController.newsFeed)
+router.put('/like-post', requireSignIn, postController.likePost)
+router.put('/unlike-post', requireSignIn, postController.unlikePost)
+
+router.put("/add-comment", requireSignIn, postController.addComment)
+router.delete("/remove-comment", requireSignIn, postController.removeComment)
+
 
 module.exports = router

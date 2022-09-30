@@ -60,6 +60,8 @@ module.exports.getUserPost = async(req, res) => {
             return res.status(400).json({ message: "id is missing in the params" })
         }
         const post = await PostModel.findById({ _id: id })
+            .populate("postedBy", "_id name image")
+            .populate("comments.postedBy", "_id name image")
         if (!post) {
             return res.status(200).json({ message: "No post found" })
         }
@@ -110,8 +112,73 @@ module.exports.newsFeed = async(req, res) => {
 
         const posts = await PostModel.find({ postedBy: { $in: { following } } })
             .populate("postedBy", "_id name image")
+            .populate("comments.postedBy", "_id name image")
             .sort({ createdAt: -1 }).limit(100)
+        res.status(200).json(posts)
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+}
 
+module.exports.likePost = async(req, res) => {
+    try {
+        const id = req.body._id
+        if (id) {
+            return res.status(400).json({ message: "id is missing" })
+        }
+        const post = await PostModel.findByIdAndUpdate(id, {
+            $addToSet: { like: req.user._id }
+        }, { new: true })
+        res.status(200).json(post)
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+}
+
+module.exports.unlikePost = async(req, res) => {
+    try {
+        const id = req.body._id
+        if (id) {
+            return res.status(400).json({ message: "id is missing" })
+        }
+        const post = await PostModel.findByIdAndUpdate(id, {
+            $pull: { like: req.user._id }
+        }, { new: true })
+        res.status(200).json(post)
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+}
+module.exports.addComment = async(req, res) => {
+    try {
+        const { postId, comment } = req.body
+        if (!postId) {
+            return res.status(400).json({ message: "post id is missing" })
+        }
+        const post = await PostModel.findByIdAndUpdate(postId, {
+                $push: { comments: { text: comment, postedBy: req.user._id } }
+            }, { new: true })
+            .populate("postedBy", "_id name image")
+            .populate("comments.postedBy", "_id name image")
+
+        res.status(200).json(post)
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+}
+
+
+module.exports.removeComment = async(req, res) => {
+    try {
+        const { postId, comment } = req.body
+        if (!postId) {
+            return res.status(400).json({ message: "post id is missing" })
+        }
+        const post = await PostModel.findByIdAndUpdate(postId, {
+            $pull: { comments: { text: comment } }
+
+        }, { new: true })
+        res.status(200).json(post)
     } catch (err) {
         res.status(500).json({ message: err.message })
     }
