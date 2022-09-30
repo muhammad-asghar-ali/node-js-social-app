@@ -209,3 +209,32 @@ module.exports.userUnFollow = async(req, res, next) => {
         res.status(500).json(err.message)
     }
 }
+
+module.exports.searchUser = async(req, res, next) => {
+    try {
+        const { query } = req.body
+        if (!query) return
+
+        const user = await UserModel.find({
+            $or: [
+                { name: { $regax: query, $options: "i" } },
+                { usename: { $regax: query, $options: "i" } }
+            ]
+        }).select("_id name image username")
+        res.status(200).json(user)
+    } catch (err) {
+        res.status(500).json(err.message)
+    }
+}
+
+module.exports.getUser = async(req, res, next) => {
+    try {
+        const { username } = req.body
+        if (!username) return
+
+        const user = await UserModel.findOne({ username: username }).select("-password  -secret")
+        res.status(200).json(user)
+    } catch (err) {
+        res.status(500).json(err.message)
+    }
+}

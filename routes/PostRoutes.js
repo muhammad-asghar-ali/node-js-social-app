@@ -19,5 +19,8 @@ router.put('/unlike-post', requireSignIn, postController.unlikePost)
 router.put("/add-comment", requireSignIn, postController.addComment)
 router.delete("/remove-comment", requireSignIn, postController.removeComment)
 
+router.get("/total-posts", postController.totalPosts)
+router.get("/posts", postController.posts)
+router.get("/post/:id", postController.getPost)
 
 module.exports = router

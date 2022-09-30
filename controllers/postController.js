@@ -183,3 +183,40 @@ module.exports.removeComment = async(req, res) => {
         res.status(500).json({ message: err.message })
     }
 }
+
+module.exports.totalPosts = async(req, res) => {
+    try {
+        const total = await PostModel.find().estimatedDocumentCount()
+        res.status(200).json(total)
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+}
+
+module.exports.posts = async(req, res) => {
+    try {
+        const posts = await PostModel.find().populate("postedBy", "_id name image")
+            .sort({ createdAt: -1 }).limit(12)
+        res.status(200).json(posts)
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+}
+
+module.exports.getPost = async(req, res) => {
+    try {
+        const id = req.params.id
+        if (!id) {
+            return res.status(400).json({ message: "id is missing in the params" })
+        }
+        const post = await PostModel.findById(id)
+            .populate("postedBy", "_id name image")
+            .populate("comments.postedBy", "_id name image")
+        if (!post) {
+            return res.status(200).json({ message: "No post found" })
+        }
+        res.status(200).json(post)
+    } catch (err) {
+        res.status(500).json({ message: err.message })
+    }
+}
