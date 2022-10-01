@@ -29,6 +29,10 @@ const UserSchema = mongoose.Schema({
     },
     about: {},
     photo: String,
+    role: {
+        type: String,
+        deafult: "Subscriber"
+    },
     followings: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
     followers: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
 }, { timestamps: true })

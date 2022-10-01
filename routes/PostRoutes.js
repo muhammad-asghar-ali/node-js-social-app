@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const postController = require('../controllers/PostController')
-const { requireSignIn, canEditAndDeletePost } = require('../middleware/index')
+const { requireSignIn, canEditAndDeletePost, isAdmin } = require('../middleware/index')
 const formidable = require("express-formidable")
 
 router.post('/create-post', requireSignIn, postController.createdPost)
@@ -22,5 +22,7 @@ router.delete("/remove-comment", requireSignIn, postController.removeComment)
 router.get("/total-posts", postController.totalPosts)
 router.get("/posts", postController.posts)
 router.get("/post/:id", postController.getPost)
+
+router.delete('/admin/delete-post/:id', requireSignIn, isAdmin, postController.deleteUserPost)
 
 module.exports = router

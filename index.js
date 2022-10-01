@@ -7,6 +7,15 @@ const fs = require('fs')
     // const AuthRoutes = require(`./routes/AuthRoutes`)
 
 const app = express()
+const http = require("http").createServer(app)
+
+const io = require("socket.io")(http, {
+    cors: {
+        origin: [process.env.CLIENT_URL],
+        method: ["GET", "POST"],
+        allowedHeaders: ["Content-type"]
+    }
+})
 
 app.use(cors({
     origin: ["http://localhost:3000"],
@@ -27,6 +36,13 @@ const port = process.env.PORT || 3001
 fs.readdirSync('./routes').map(r => app.use('/api', require(`./routes/${r}`)))
     // app.use('/api', AuthRoutes)
 
-app.listen(port, () => {
+io.on("connect", (socket) => {
+    socket.on("new-post", (newPost) => {
+        socket.broadcast.emit("new-post", newPost)
+    })
+})
+
+
+http.listen(port, () => {
     console.log("App is reunning on port " + port)
 })

@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const authController = require('../controllers/AuthController')
-const { requireSignIn } = require('../middleware/index')
+const { requireSignIn, isAdmin } = require('../middleware/index')
 
 
 router.post('/register', authController.register)
@@ -18,5 +18,7 @@ router.get('/user-following', requireSignIn, authController.userFollowings)
 router.get('/search-user/:query', authController.searchUser)
 router.get('/user/:username', authController.getUser)
 
+// admin
+router.get('/current-admin', requireSignIn, isAdmin, authController.currentUser)
 
 module.exports = router
